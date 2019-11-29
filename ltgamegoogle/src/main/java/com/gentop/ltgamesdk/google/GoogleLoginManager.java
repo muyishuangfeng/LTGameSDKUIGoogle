@@ -21,7 +21,6 @@ import java.util.WeakHashMap;
 
 public class GoogleLoginManager {
 
-    private static final String TAG = GoogleLoginManager.class.getSimpleName();
 
     public static void initGoogle(Activity context, String clientID, int selfRequestCode) {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -34,20 +33,20 @@ public class GoogleLoginManager {
     }
 
 
-    public static void onActivityResult(String url, int requestCode, Intent data, int selfRequestCode,
+    public static void onActivityResult(boolean isServerTest, int requestCode, Intent data, int selfRequestCode,
                                         Context context, String LTAppID, String LTAppKey, String adID,
                                         String packageID,
                                         OnLoginSuccessListener mListener) {
         if (requestCode == selfRequestCode) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             if (!TextUtils.isEmpty(adID)) {
-                handleSignInResult(context, url, LTAppID, LTAppKey, adID, packageID, task, mListener);
+                handleSignInResult(context, isServerTest, LTAppID, LTAppKey, adID, packageID, task, mListener);
             }
         }
     }
 
 
-    private static void handleSignInResult(Context context, String url, String LTAppID,
+    private static void handleSignInResult(Context context, boolean isServerTest, String LTAppID,
                                            String LTAppKey, String adID, String packageID,
                                            @NonNull Task<GoogleSignInAccount> completedTask,
                                            OnLoginSuccessListener mListener) {
@@ -64,10 +63,34 @@ public class GoogleLoginManager {
                     map.put("platform_id", packageID);
                 }
             }
-            LoginResultManager.googleLogin(context, url, LTAppID,
+            LoginResultManager.googleLogin(context, isServerTest, LTAppID,
                     LTAppKey, map, mListener);
         } catch (ApiException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    public static void onActivityResult(int requestCode, Intent data, int selfRequestCode, OnGoogleTokenListener listener) {
+        if (requestCode == selfRequestCode) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task, listener);
+        }
+    }
+
+
+    private static void handleSignInResult(@NonNull Task<GoogleSignInAccount> completedTask, OnGoogleTokenListener listener) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            String idToken = account.getIdToken();
+            if (!TextUtils.isEmpty(idToken)) {
+                listener.onSuccess(idToken);
+            } else {
+                listener.onFailed("get google token failed");
+            }
+        } catch (ApiException e) {
+            e.printStackTrace();
+            listener.onFailed(e.getMessage());
         }
     }
 
