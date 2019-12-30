@@ -57,14 +57,12 @@ public class GoogleLoginManager {
             if (!TextUtils.isEmpty(idToken)) {
                 if (!TextUtils.isEmpty(adID)) {
                     map.put("access_token", idToken);
-                    map.put("platform", 2);
-                    map.put("adid", adID);
                     map.put("gps_adid", adID);
                     map.put("platform_id", packageID);
                 }
             }
             LoginResultManager.googleLogin(context, isServerTest, LTAppID,
-                    LTAppKey, map, mListener);
+                    LTAppKey,adID, map, mListener);
         } catch (ApiException e) {
             e.printStackTrace();
         }
