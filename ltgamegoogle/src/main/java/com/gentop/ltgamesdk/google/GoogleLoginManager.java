@@ -54,7 +54,7 @@ public class GoogleLoginManager {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             String idToken = account.getIdToken();
             Map<String, Object> map = new WeakHashMap<>();
-            if (!TextUtils.isEmpty(idToken)) {
+            if (idToken != null) {
                 if (!TextUtils.isEmpty(adID)) {
                     map.put("access_token", idToken);
                     map.put("platform", 2);
